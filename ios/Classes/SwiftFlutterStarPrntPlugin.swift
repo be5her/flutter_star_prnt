@@ -20,6 +20,8 @@ public class SwiftFlutterStarPrntPlugin: NSObject, FlutterPlugin {
                 break;
             case "print":
                 print(call, result: result)
+            case "getCommands":
+                getCommands(call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
       }
@@ -103,7 +105,21 @@ public class SwiftFlutterStarPrntPlugin: NSObject, FlutterPlugin {
         appendCommands(builder: builder, printCommands: printCommands)
         builder.endDocument()
         sendCommand(portName: portName, portSetting: portSettings, command: [UInt8](builder.commands.copy() as! Data),result: result)
+    }
+
+    public func getCommands(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as! Dictionary<String, AnyObject>
+        let emulation = arguments["emulation"] as! String
+        let printCommands = arguments["printCommands"] as! Array<Dictionary<String,Any>>
+
         
+        let portSettings :String = getPortSettingsOption(emulation)
+        let starEmulation :StarIoExtEmulation = getEmulation(emulation)
+        let builder:ISCBBuilder = StarIoExt.createCommandBuilder(starEmulation)
+        builder.beginDocument()
+        appendCommands(builder: builder, printCommands: printCommands)
+        builder.endDocument()
+        result([UInt8](builder.commands.copy() as! Data))
     }
     
     func portInfoToDictionary(portInfo: PortInfo) -> Dictionary<String,String>{

@@ -8,13 +8,11 @@ import 'printer_response_status.dart';
 
 /// Class to handle printer communication
 class StarPrnt {
-  static const MethodChannel _channel =
-      const MethodChannel('flutter_star_prnt');
+  static const MethodChannel _channel = const MethodChannel('flutter_star_prnt');
 
   /// Scan for available printers. Have specify [StarPortType] of the printer
   static Future<List<PortInfo>> portDiscovery(StarPortType portType) async {
-    dynamic result =
-        await _channel.invokeMethod('portDiscovery', {'type': portType.text});
+    dynamic result = await _channel.invokeMethod('portDiscovery', {'type': portType.text});
     if (result is List) {
       return result.map<PortInfo>((port) {
         return PortInfo(port);
@@ -67,6 +65,24 @@ class StarPrnt {
       'printCommands': printCommands.getCommands(),
     });
     return result;
+  }
+
+  /// Generates and returns the print commands as [List<int>]. Have to specify [emulation]. Returns [List<int>]
+  static Future<List<int>> getEncodedCommands({
+    required String emulation,
+    required PrintCommands printCommands,
+  }) async {
+    dynamic result = await _channel.invokeMethod('getCommands', {
+      'emulation': emulation,
+      'printCommands': printCommands.getCommands(),
+    });
+    var list = result as List;
+    List<int> commands = [];
+    list.forEach((e) {
+      commands.add(e);
+    });
+
+    return commands;
   }
 
   /// Check status of printer

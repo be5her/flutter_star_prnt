@@ -81,6 +81,9 @@ public class FlutterStarPrntPlugin : FlutterPlugin, MethodCallHandler {
         "print" -> {
           print(call, result)
         }
+        "getCommands" -> {
+          getCommands(call, result)
+        }
         else -> result.notImplemented()
       }
     }
@@ -256,6 +259,29 @@ public class FlutterStarPrntPlugin : FlutterPlugin, MethodCallHandler {
         builder.getCommands(),
         applicationContext,
         result)
+  }
+
+  public fun getCommands(@NonNull call: MethodCall, @NonNull result: Result) {
+    val emulation: String = call.argument<String>("emulation") as String
+    val printCommands: ArrayList<Map<String, Any>> =
+      call.argument<ArrayList<Map<String, Any>>>("printCommands") as ArrayList<Map<String, Any>>
+    if (printCommands.size < 1) {
+      val json: MutableMap<String, Any?> = mutableMapOf()
+
+      json["offline"] = false
+      json["coverOpen"] = false
+      json["cutterError"] = false
+      json["receiptPaperEmpty"] = false
+      json["info_message"] = "No dat to print"
+      json["is_success"] = true
+      result.success(json)
+      return
+    }
+    val builder: ICommandBuilder = StarIoExt.createCommandBuilder(getEmulation(emulation))
+    builder.beginDocument()
+    appendCommands(builder, printCommands, applicationContext)
+    builder.endDocument()
+    result.success(builder.commands)
   }
 
   private fun getPortDiscovery(@NonNull interfaceName: String): MutableList<Map<String, String>> {
